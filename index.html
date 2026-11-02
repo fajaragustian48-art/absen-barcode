@@ -613,7 +613,7 @@
                                 <i class="fa-solid fa-code text-gold"></i> Panduan Setup Backend Apps Script
                             </h3>
                             <p class="text-xs text-slate-500 mt-1">
-                                Pasang kode Google Apps Script di Spreadsheet Anda agar sistem dapat menyinkronkan data secara otomatis ke sheet <code class="bg-slate-100 px-1.5 py-0.5 rounded text-rose-600 font-mono font-bold">Data Absensi</code> (GID: 1-S1Xwha8cuZvNXpkXpU_3m9dam7Nu9cPU6vUYyXN5Dk).
+                                Pasang kode Google Apps Script di Spreadsheet Anda agar sistem dapat menyinkronkan data secara otomatis ke sheet <code class="bg-slate-100 px-1.5 py-0.5 rounded text-rose-600 font-mono font-bold">Data Absensi</code>. Anda dapat menyesuaikan variabel <code class="font-mono text-navy font-bold">SPREADSHEET_ID</code> di bagian paling atas kode jika ingin mengganti database Spreadsheet.
                             </p>
                         </div>
                         <button onclick="copyAppsScriptCode()" class="px-4 py-2 bg-gold hover:bg-gold-hover text-navy font-extrabold rounded-xl text-xs transition shadow flex items-center gap-2">
@@ -628,8 +628,8 @@
                             <p class="text-slate-600">Buka Spreadsheet Google Sheets target, lalu klik menu <strong class="text-navy">Ekstensi &gt; Apps Script</strong>.</p>
                         </div>
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                            <span class="font-black text-navy text-sm">2. Tempel Kode</span>
-                            <p class="text-slate-600">Hapus seluruh isi di <code class="font-mono">Code.gs</code> dan tempelkan kode Apps Script di bawah ini.</p>
+                            <span class="font-black text-navy text-sm">2. Tempel Kode & Ubah GID</span>
+                            <p class="text-slate-600">Hapus seluruh isi di <code class="font-mono">Code.gs</code>, tempelkan kode di bawah ini, lalu ubah nilai <code class="font-mono font-bold text-navy">SPREADSHEET_ID</code> jika ingin mengganti database.</p>
                         </div>
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                             <span class="font-black text-navy text-sm">3. Deploy Web App</span>
@@ -640,23 +640,34 @@
                     <!-- Apps Script Code Box -->
                     <div class="relative bg-slate-900 rounded-2xl p-4 text-slate-200 font-mono text-xs overflow-x-auto shadow-inner border border-slate-800">
                         <pre id="gas-script-code"><code>// =========================================================================
-// GOOGLE APPS SCRIPT BACKEND - SCHOOL PRIME PRESENSI OFFLLINE SYNC ENGINE
-// target Sheet Name: "Data Absensi"
-// Target GID/ID: 1-S1Xwha8cuZvNXpkXpU_3m9dam7Nu9cPU6vUYyXN5Dk
+// GOOGLE APPS SCRIPT BACKEND - SCHOOL PRIME PRESENSI OFFLINE SYNC ENGINE
+// Target Sheet Name: "Data Absensi"
 // =========================================================================
+
+// KONFIGURASI DATABASE SPREADSHEET:
+// Ubah ID / GID Spreadsheet di bawah ini jika Anda ingin mengganti file database Google Sheets
+var SPREADSHEET_ID = "1a7IIwqvRID3LdWi67XuEVTBqgSpveGlktiKV4DJTPpY"; 
+var SHEET_NAME = "Data Absensi";
+
+// Fungsi pembantu untuk membuka Spreadsheet berdasarkan SPREADSHEET_ID atau Active Spreadsheet
+function getSpreadsheet() {
+  if (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") {
+    return SpreadsheetApp.openById(SPREADSHEET_ID.trim());
+  }
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.tryLock(10000);
   
   try {
-    var sheetName = "Data Absensi";
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(sheetName);
+    var ss = getSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAME);
     
     // Jika sheet belum ada, buat baru dan tambahkan header
     if (!sheet) {
-      sheet = ss.insertSheet(sheetName);
+      sheet = ss.insertSheet(SHEET_NAME);
       sheet.appendRow([
         "NIS", 
         "Nama Lengkap", 
@@ -688,7 +699,7 @@ function doPost(e) {
     
     return ContentService.createTextOutput(JSON.stringify({
       status: "success", 
-      message: "Data presensi berhasil disimpan ke sheet Data Absensi"
+      message: "Data presensi berhasil disimpan ke sheet " + SHEET_NAME
     })).setMimeType(ContentService.MimeType.JSON);
     
   } catch (error) {
@@ -703,9 +714,8 @@ function doPost(e) {
 
 function doGet(e) {
   try {
-    var sheetName = "Data Absensi";
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(sheetName);
+    var ss = getSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAME);
     
     if (!sheet) {
       return ContentService.createTextOutput(JSON.stringify({
@@ -1333,7 +1343,7 @@ function doGet(e) {
             { nis: "242507025", nama: "Zahrotul Sita", kelas: "9D" }
         ];
 
-        const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrJd0JKlVKb9wQcx8_a7fz4IH5yliunoPvstsUi06IRP2GtNPBXe1hFv5qTqx9JXax/exec";
+        const DEFAULT_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPggtaXnJsvLdQZ4K7deyrw6pSgT1frkufwMvHgptxU7TaJYlVKHFCmvbOiEBL266V8g/exec";
 
         // Global State
         let students = [];
